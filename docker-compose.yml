@@ -1,0 +1,40 @@
+version: '3.8'
+services:
+  nginx:
+    image: nginx:latest
+    ports:
+      - "8080:80"
+    volumes:
+      - ./default.conf:/etc/nginx/conf.d/default.conf
+    depends_on:
+      - laravel
+    networks:
+      - app-network
+
+  laravel:
+    image: viethe170/ggs-laravel:latest
+    command: >
+      bash -c "chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache &&
+               chmod -R 775 /var/www/html/storage /var/www/html/bootstrap/cache &&
+                php artisan migrate && 
+                php-fpm"
+    depends_on:
+      - mysql
+    networks:
+      - app-network
+
+  mysql:
+    image: mysql:latest
+    environment:
+      MYSQL_DATABASE: GGS
+      MYSQL_ROOT_PASSWORD: viethe170916
+    networks:
+      - app-network
+
+  nextjs:
+    image: viethe170/ggs-nextjs:latest
+    ports:
+      - "3000:3000"
+networks:
+  app-network:
+    driver: bridge
